@@ -57,9 +57,9 @@ class Bme280():
         if self.digH[i] & 0x8000: self.digH[i] = (-self.digH[i] ^ 0xFFFF) + 1  
 
   def  get_data(self):
-    temp = self.get_temp()
-    pressure = self.get_pressure()
-    humid = self.get_humid()
+    temp = round(self.get_temp(), 1)
+    pressure = round(self.get_pressure(), 1)
+    humid = round(self.get_humid(), 1)
     return temp, humid, pressure
     
   def get_pressure(self):
