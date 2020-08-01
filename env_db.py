@@ -100,16 +100,12 @@ class env_db():
 
 def main():
 
-    console = logging.StreamHandler(sys.stdout)
-    logger = logging.getLogger('env_db_test')
-    logger.addHandler(console)
-    logger.setLevel(logging.DEBUG)
-    logger.debug('start')
+    # unit test
     db = env_db()
 
     #logger.debug(db.__class__.__name__)
     sensor_id,probe_date,temp,humi = db.getLatestInternalData()
-    print('No:', sensor_id, 'Content:', temp)
+    print('No:', sensor_id, probe_date, temp, humi)
 
 
 if __name__ == '__main__':
