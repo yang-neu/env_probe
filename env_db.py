@@ -12,7 +12,7 @@ class env_db():
             self.internalEnvTable = "dht11_sensor"
             self.externalEnvTable = "bme280_sensor"
 
-            self.logLevel = logging.DEBUG
+            self.logLevel = logging.INFO
             console = logging.StreamHandler(sys.stdout)
             formatter = logging.Formatter('%(asctime)s [%(module)-12s %(funcName)-12s] %(levelname)-8s %(message)s')
             console.setFormatter(formatter)
@@ -43,20 +43,20 @@ class env_db():
                 curs.close()
             conn.commit()
         except pymysql.Error as e:
-            self.log.error("__init__; error pymysql %d: %s" %(e.args[0], e.args[1]))
+            self.log.error("pymysql %d: %s" %(e.args[0], e.args[1]))
             sys.exit(1)
         finally:
             if self.conn:
                 self.conn.close()
                 self.conn = None
-                self.log.info('__init__ closed db')
+                self.log.debug('Closed db')
 
     def __del__(self):
         try:
             if self.conn:
                 self.conn.close()
         except pymysql.Error as e:
-            print("could not add internal evn data; error pymysql %d: %s" %(e.args[0], e.args[1]))
+            self.log.debug("could not add internal evn data; error pymysql %d: %s" %(e.args[0], e.args[1]))
 
 
     def _conn_db(self):
@@ -66,12 +66,17 @@ class env_db():
                 host='192.168.11.48',
                 db='temp_db'
                 )
+        self.log.debug('Open db')
         return self.conn
+
+    def debugOn(self):
+        self.logLevel = logging.DEBUG
+        self.log.setLevel(self.logLevel)
 
     def getLatestInternalData(self):
         try:
             self._conn_db()
-            sql = 'select * from {} limit 1;'.format(self.internalEnvTable)
+            sql = 'select * from {} order by probe_date desc limit 1;'.format(self.internalEnvTable)
             self.log.debug(sql)
 
             with self.conn.cursor() as curs:
@@ -81,29 +86,44 @@ class env_db():
                 # id, probe_date, temp, humi
                 return row[0],row[1],row[2],row[3]
         except pymysql.Error as e:
-            self.log.error("getLatestInternalData; error pymysql %d: %s" %(e.args[0], e.args[1]))
+            self.log.error("pymysql %d: %s" %(e.args[0], e.args[1]))
             sys.exit(1)
         finally:
             if self.conn:
                 self.conn.close()
                 self.conn = None
-                self.log.info('getLatestInternalData closed db in init')
+                self.log.debug('closed db')
 
     def addInternalEnvData(self, sensor_id, date, humidity, temperature):
         try:
-            if self.curs is not None:
-                sql = "insert into dht11_sensor values ({}, '{}', {}, {});".format(sensor_id, date.strftime('%Y-%m-%d %H:%M:%S'), temperature, humidity )
-                print(sql)
+            self._conn_db()
+            sql = "insert into dht11_sensor values ({}, '{}', {}, {});".format(sensor_id, date.strftime('%Y-%m-%d %H:%M:%S'), temperature, humidity )
+            self.log.debug(sql)
+
+            with self.conn.cursor() as curs:
+                curs.execute(sql)
+            self.conn.commit()
         except pymysql.Error as e:
-            print("could not add internal evn data; error pymysql %d: %s" %(e.args[0], e.args[1]))
+            self.log.error("pymysql %d: %s" %(e.args[0], e.args[1]))
+            sys.exit(1)
+        finally:
+            if self.conn:
+                self.conn.close()
+                self.conn = None
+                self.log.debug('closed db')
 
 
 def main():
 
     # unit test
     db = env_db()
+    db.debugOn()
 
-    #logger.debug(db.__class__.__name__)
+    sensor_id = 999
+    temperature = 20.0
+    humidity = 50
+    date = datetime.datetime.now()
+    db.addInternalEnvData(sensor_id, date, temperature, humidity)
     sensor_id,probe_date,temp,humi = db.getLatestInternalData()
     print('No:', sensor_id, probe_date, temp, humi)
 
