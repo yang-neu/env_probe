@@ -5,8 +5,10 @@ import datetime
 import pymysql.cursors
 import logging as log
 import sys
+import argparse
 
 from env_db import env_db
+
 
 # Sensor should be set to Adafruit_DHT.DHT11,
 # Adafruit_DHT.DHT22, or Adafruit_DHT.AM2302.
@@ -19,6 +21,12 @@ pin = 14
 
 
 def main():
+
+    parser = argparse.ArgumentParser(description='Usage...')
+    parser.add_argument('-s','--sensor',  help='The ID of sensor')
+    args = parser.parse_args()
+    print (args.sensor)
+    exit(0)
 
     db = env_db()
     db.debugOn()
