@@ -94,10 +94,49 @@ class env_db():
                 self.conn = None
                 self.log.debug('closed db')
 
+    def getLatestExternalData(self):
+        try:
+            self._conn_db()
+            sql = 'select * from {} order by probe_date desc limit 1;'.format(self.externalEnvTable)
+            self.log.debug(sql)
+
+            with self.conn.cursor() as curs:
+                curs.execute(sql)
+                row = curs.fetchone()
+                curs.close()
+                # id, probe_date, temp, humi, bar
+                return row[0],row[1],row[2],row[3],row[4]
+        except pymysql.Error as e:
+            self.log.error("pymysql %d: %s" %(e.args[0], e.args[1]))
+            sys.exit(1)
+        finally:
+            if self.conn:
+                self.conn.close()
+                self.conn = None
+                self.log.debug('closed db')
+
     def addInternalEnvData(self, sensor_id, date, humidity, temperature):
         try:
             self._conn_db()
-            sql = "insert into dht11_sensor values ({}, '{}', {}, {});".format(sensor_id, date.strftime('%Y-%m-%d %H:%M:%S'), temperature, humidity )
+            sql = "insert into {} values ({}, '{}', {}, {});".format(self.internalEnvTable, sensor_id, date.strftime('%Y-%m-%d %H:%M:%S'), temperature, humidity )
+            self.log.debug(sql)
+
+            with self.conn.cursor() as curs:
+                curs.execute(sql)
+            self.conn.commit()
+        except pymysql.Error as e:
+            self.log.error("pymysql %d: %s" %(e.args[0], e.args[1]))
+            sys.exit(1)
+        finally:
+            if self.conn:
+                self.conn.close()
+                self.conn = None
+                self.log.debug('closed db')
+
+    def addExternalEnvData(self, sensor_id, date, humidity, temperature, barometric):
+        try:
+            self._conn_db()
+            sql = "insert into {} values ({}, '{}', {}, {}, {});".format(self.externalEnvTable, sensor_id, date.strftime('%Y-%m-%d %H:%M:%S'), temperature, humidity, barometric )
             self.log.debug(sql)
 
             with self.conn.cursor() as curs:
@@ -121,11 +160,16 @@ def main():
 
     sensor_id = 999
     temperature = 20.0
-    humidity = 50
+    humidity = 50.1
+    bar = 1003.5
     date = datetime.datetime.now()
     db.addInternalEnvData(sensor_id, date, temperature, humidity)
     sensor_id,probe_date,temp,humi = db.getLatestInternalData()
     print('No:', sensor_id, probe_date, temp, humi)
+
+    db.addExternalEnvData(998, date, temperature, humidity, bar)
+    sensor_id,probe_date,temp,humi,bar = db.getLatestExternalData()
+    print('No:', sensor_id, probe_date, temp, humi, bar)
 
 
 if __name__ == '__main__':
