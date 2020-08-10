@@ -7,8 +7,12 @@ import sys
 
 
 class env_db():
-    def __init__(self):
+    def __init__(self,user='alex',passwd='!Passw0rd',host='192.168.11.48',db='temp_db'):
         try:
+            self._user=user
+            self._passwd=passwd
+            self._host=host
+            self._db=db
             self.internalEnvTable = "dht11_sensor"
             self.externalEnvTable = "bme280_sensor"
 
@@ -60,11 +64,12 @@ class env_db():
 
 
     def _conn_db(self):
+        self.log.debug('{} {} {} {}'.format(self._user,self._passwd,self._host,self._db))
         self.conn = pymysql.connect(
-                user='alex',
-                passwd='!Passw0rd',
-                host='192.168.11.48',
-                db='temp_db'
+                user=self._user,
+                passwd=self._passwd,
+                host=self._host,
+                db=self._db
                 )
         self.log.debug('Open db')
         return self.conn
@@ -72,6 +77,49 @@ class env_db():
     def debugOn(self):
         self.logLevel = logging.DEBUG
         self.log.setLevel(self.logLevel)
+
+    def createSensorInforTable(self):
+        try:
+            self._conn_db()
+            sql = 'CREATE TABLE IF NOT EXISTS sensor_info (id int(11), type varchar(255), location varchar(255));'
+            self.log.debug(sql)
+
+            with self.conn.cursor() as curs:
+                curs.execute(sql)
+            self.conn.commit()
+
+            sql = 'select count(*) from sensor_info;'
+            self.log.debug(sql)
+
+            with self.conn.cursor() as curs:
+                curs.execute(sql)
+                (number_of_rows,)=curs.fetchone()
+                if number_of_rows > 0:
+                    return
+
+            sql_array = ["INSERT INTO sensor_info values (1, 'DHT11', 'Main bedroom');",
+                         "INSERT INTO sensor_info values (2, 'DHT11', 'Niuniu bedroom');",
+                         "INSERT INTO sensor_info values (3, 'DHT11', 'Doudou bedroom');",
+                         "INSERT INTO sensor_info values (4, 'DHT11', 'Toilet');",
+                         "INSERT INTO sensor_info values (5, 'DHT11', 'Storage room');",
+                         "INSERT INTO sensor_info values (6, 'DHT11', 'Living room');",
+                         "INSERT INTO sensor_info values (7, 'DHT11', 'Shore cabinet');",
+                         "INSERT INTO sensor_info values (10, 'DHT11', 'South balcony');",
+                        ]
+            self.log.debug(sql)
+            with self.conn.cursor() as curs:
+                for sql in sql_array:
+                    curs.execute(sql)
+            self.conn.commit()
+
+        except pymysql.Error as e:
+            self.log.error("pymysql %d: %s" %(e.args[0], e.args[1]))
+            sys.exit(1)
+        finally:
+            if self.conn:
+                self.conn.close()
+                self.conn = None
+                self.log.debug('closed db')
 
     def getLatestInternalData(self):
         try:
@@ -155,7 +203,8 @@ class env_db():
 def main():
 
     # unit test
-    db = env_db()
+    # db = env_db()
+    db = env_db('alex','Passw0rd','192.168.11.53','temp_db')
     db.debugOn()
 
     sensor_id = 999
@@ -170,6 +219,8 @@ def main():
     db.addExternalEnvData(998, date, temperature, humidity, bar)
     sensor_id,probe_date,temp,humi,bar = db.getLatestExternalData()
     print('No:', sensor_id, probe_date, temp, humi, bar)
+
+    db.createSensorInforTable()
 
 
 if __name__ == '__main__':
