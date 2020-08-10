@@ -104,7 +104,7 @@ class env_db():
                          "INSERT INTO sensor_info values (5, 'DHT11', 'Storage room');",
                          "INSERT INTO sensor_info values (6, 'DHT11', 'Living room');",
                          "INSERT INTO sensor_info values (7, 'DHT11', 'Shore cabinet');",
-                         "INSERT INTO sensor_info values (10, 'DHT11', 'South balcony');",
+                         "INSERT INTO sensor_info values (10, 'BME280', 'South balcony');",
                         ]
             self.log.debug(sql)
             with self.conn.cursor() as curs:
