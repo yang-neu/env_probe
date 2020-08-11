@@ -163,7 +163,7 @@ class env_db():
                 self.conn = None
                 self.log.debug('closed db')
 
-    def addInternalEnvData(self, sensor_id, date, humidity, temperature):
+    def addInternalEnvData(self, sensor_id, date, temperature, humidity):
         try:
             self._conn_db()
             sql = "insert into {} values ({}, '{}', {}, {});".format(self.internalEnvTable, sensor_id, date.strftime('%Y-%m-%d %H:%M:%S'), temperature, humidity )
@@ -181,7 +181,7 @@ class env_db():
                 self.conn = None
                 self.log.debug('closed db')
 
-    def addExternalEnvData(self, sensor_id, date, humidity, temperature, barometric):
+    def addExternalEnvData(self, sensor_id, date, temperature, humidity, barometric):
         try:
             self._conn_db()
             sql = "insert into {} values ({}, '{}', {}, {}, {});".format(self.externalEnvTable, sensor_id, date.strftime('%Y-%m-%d %H:%M:%S'), temperature, humidity, barometric )

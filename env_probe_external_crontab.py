@@ -23,7 +23,7 @@ def main():
         parser.print_help(sys.stderr)
         exit(1)
 
-    db = env_db()
+    db = env_db('alex','Passw0rd','192.168.11.53','temp_db')
     db.debugOn()
 
     # i2c_address=0x76, bus_number=1
