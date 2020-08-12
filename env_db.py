@@ -7,7 +7,7 @@ import sys
 
 
 class env_db():
-    def __init__(self,user='alex',passwd='!Passw0rd',host='192.168.11.48',db='temp_db'):
+    def __init__(self,user='alex',passwd='Passw0rd',host='192.168.11.48',db='temp_db'):
         try:
             self._user=user
             self._passwd=passwd
@@ -204,7 +204,7 @@ def main():
 
     # unit test
     # db = env_db()
-    db = env_db('alex','Passw0rd','192.168.11.53','temp_db')
+    db = env_db('alex','Passw0rd','192.168.11.48','temp_db')
     db.debugOn()
 
     sensor_id = 999

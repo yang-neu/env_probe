@@ -11,15 +11,15 @@ def main():
     try:
         conn_i = pymysql.connect(
                 user = 'alex',
-                passwd = '!Passw0rd',
-                host = '192.168.11.48',
+                passwd = 'Passw0rd',
+                host = '192.168.11.53',
                 db ='temp_db'
                 )
 
         conn_o = pymysql.connect(
                 user = 'alex',
                 passwd = 'Passw0rd',
-                host = '192.168.11.53',
+                host = '192.168.11.48',
                 db ='temp_db'
                 )
 
