@@ -2,6 +2,7 @@
 import datetime
 import psutil
 import argparse
+from gpiozero import CPUTemperature
 from dev_db import dev_db
 
 def main():
@@ -26,7 +27,8 @@ def main():
 
     storage_usage = psutil.disk_usage('/').percent
 
-    cpu_temp = psutil.sensors_temperatures()['cpu_thermal'][0].current
+    #cpu_temp = psutil.sensors_temperatures()['cpu_thermal'][0].current
+    cpu_temp = CPUTemperature().temperature
 
     db.addDevData(args.device, probe_date, cpu_temp, cpu_usage, mem_usage, storage_usage) 
 
